@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from pyswip import Prolog
 
+
 def build_kb(prolog):
     prolog.assertz("temperature(hot) :- temperature_value(T), T > 28")
     prolog.assertz("temperature(mild) :- temperature_value(T), T >= 15, T =< 28")
