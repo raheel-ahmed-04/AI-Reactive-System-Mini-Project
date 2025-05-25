@@ -85,6 +85,10 @@ bg_photo = ImageTk.PhotoImage(bg_img)
 bg_label = tk.Label(root, image=bg_photo)
 bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+# --- Heading on Top-Left ---
+title_label = tk.Label(root, text="Weather Prediction System", font=("Segoe UI", 16, "bold"), bg="#e6f1fb", fg="#003366")
+title_label.place(x=45, y=55)
+
 # --- Variables ---
 rain_var = tk.BooleanVar()
 storm_var = tk.BooleanVar()
