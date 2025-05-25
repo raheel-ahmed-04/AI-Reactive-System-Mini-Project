@@ -3,7 +3,6 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from pyswip import Prolog
 
-
 def build_kb(prolog):
     prolog.assertz("temperature(hot) :- temperature_value(T), T > 28")
     prolog.assertz("temperature(mild) :- temperature_value(T), T >= 15, T =< 28")
@@ -30,21 +29,34 @@ def build_kb(prolog):
     prolog.assertz('weather_prediction(partly_cloudy_hot, "Hot and humid with medium clouds") :- temperature(hot), humidity(humid), cloudy(medium)')
     prolog.assertz('weather_prediction(partly_cloudy_mild, "Mild and dry with medium cloud cover") :- temperature(mild), humidity(dry), cloudy(medium)')
     prolog.assertz('weather_prediction(partly_cloudy_cold, "Cold with medium clouds and moderate wind") :- temperature(cold), cloudy(medium), wind(moderate)')
+    prolog.assertz('weather_prediction(clouds_clear_but_cold_, "Cold with low clouds and moderate wind") :- temperature(cold), cloudy(low), wind(moderate)')
+    prolog.assertz('weather_prediction(partly_cloudy_cold, "Hot with medium clouds and moderate wind") :- temperature(hot), cloudy(medium), wind(moderate)')
     prolog.assertz('weather_prediction(breezy_humid_medium, "Humid with moderate wind and medium clouds") :- humidity(humid), cloudy(medium), wind(moderate)')
+    prolog.assertz('weather_prediction(breezy_humid_medium, "Dry and hot with moderate wind and medium clouds") :- temperature(hot), humidity(dry), cloudy(medium), wind(moderate)')
+    prolog.assertz('weather_prediction(breezy_humid_medium, "Dry and cold with moderate wind and medium clouds") :- temperature(cold), humidity(dry), cloudy(medium), wind(moderate)')
 
     # Existing broad/fallback rules
     prolog.assertz('weather_prediction(partly_sunny, "Hot temperature + humid + low clouds = possible muggy but sunny conditions") :- temperature(hot), humidity(humid), cloudy(low)')
+    prolog.assertz('weather_prediction(partly_sunny, "Hot temperature + humid + High clouds = possible muggy but sunny conditions") :- temperature(hot), humidity(humid), cloudy(high)')
+    prolog.assertz('weather_prediction(partly_sunny, "Hot temperature + dry + High clouds = possible muggy but sunny conditions") :- temperature(hot), humidity(dry), cloudy(high)')
     prolog.assertz('weather_prediction(very_hot_dry, "Very hot and dry with low clouds suggests hot dry day") :- temperature(hot), humidity(dry), cloudy(low)')
     prolog.assertz('weather_prediction(chilly_clear_day, "Cold temperature + dry + low clouds + light wind") :- temperature(cold), humidity(dry), cloudy(low), wind(light)')
 
     # Fallback
     prolog.assertz('weather_prediction(unknown, "Conditions do not match any known pattern")')
 
+prolog = Prolog()
+build_kb(prolog)
 
 def predict_weather(temp_value, rain_expected, storm_expected, cloud_level, wind_override):
-    prolog = Prolog()
-    build_kb(prolog)
+    # Clean up any previous temporary facts
+    prolog.retractall("temperature_value(_)") 
+    prolog.retractall("cloudy(_)") 
+    prolog.retractall("rain_expected") 
+    prolog.retractall("storm_expected") 
+    prolog.retractall("wind(_)")  # If auto is overridden
 
+    # Assert current input
     prolog.assertz(f"temperature_value({temp_value})")
     prolog.assertz(f"cloudy({cloud_level})")
 
@@ -60,6 +72,7 @@ def predict_weather(temp_value, rain_expected, storm_expected, cloud_level, wind
         return results[0]["W"], results[0]["Reason"]
     else:
         return "unknown", "No matching rule"
+
 
 
 def load_icon(path, size=(24, 24)):
